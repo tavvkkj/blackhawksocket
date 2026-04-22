@@ -315,7 +315,7 @@ wss.on('connection', (socket) => {
         return
       }
 
-      broadcastRoom(room, {
+      sendToSession(room, room.hostSessionId, {
         type: 'remote_input',
         roomId: room.roomId,
         inputType,
