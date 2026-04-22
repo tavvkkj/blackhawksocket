@@ -1,0 +1,12 @@
+{
+  "name": "blackhawk-venice-multiplayer-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node multiplayer-server.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}
