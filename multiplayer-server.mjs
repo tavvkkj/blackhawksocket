@@ -321,6 +321,10 @@ wss.on('connection', (socket) => {
     }
 
     if (payload.type === 'remote_input') {
+      if (session.role !== 'guest') {
+        return
+      }
+
       const inputType = String(payload.inputType || '').trim().toLowerCase()
       if (!inputType) {
         return
