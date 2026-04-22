@@ -67,6 +67,17 @@ function broadcastRoom(room, payload) {
   }
 }
 
+function broadcastRoomExceptSession(room, excludedSessionId, payload) {
+  for (const session of room.sessions.values()) {
+    if (session.sessionId === excludedSessionId) {
+      continue
+    }
+    for (const socket of session.sockets) {
+      send(socket, payload)
+    }
+  }
+}
+
 function sendToSession(room, targetSessionId, payload) {
   const targetSession = room.sessions.get(targetSessionId)
   if (!targetSession) {
@@ -341,6 +352,25 @@ wss.on('connection', (socket) => {
         sourceSessionId: session.sessionId,
         targetSessionId,
         signal,
+      })
+      return
+    }
+
+    if (payload.type === 'game_state') {
+      if (session.role !== 'host') {
+        return
+      }
+
+      const stateJson = String(payload.stateJson || '').trim()
+      if (!stateJson) {
+        return
+      }
+
+      broadcastRoomExceptSession(room, session.sessionId, {
+        type: 'game_state',
+        roomId: room.roomId,
+        sourceSessionId: session.sessionId,
+        stateJson,
       })
       return
     }
