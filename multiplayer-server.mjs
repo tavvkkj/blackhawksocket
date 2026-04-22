@@ -67,6 +67,17 @@ function broadcastRoom(room, payload) {
   }
 }
 
+function sendToSession(room, targetSessionId, payload) {
+  const targetSession = room.sessions.get(targetSessionId)
+  if (!targetSession) {
+    return false
+  }
+  for (const socket of targetSession.sockets) {
+    send(socket, payload)
+  }
+  return true
+}
+
 function broadcastRoomState(room) {
   broadcastRoom(room, {
     type: 'room_state',
@@ -309,6 +320,27 @@ wss.on('connection', (socket) => {
         roomId: room.roomId,
         inputType,
         sourceSessionId: session.sessionId,
+      })
+      return
+    }
+
+    if (payload.type === 'webrtc_signal') {
+      const targetSessionId = String(payload.targetSessionId || '').trim()
+      const signal = payload.signal
+      if (!targetSessionId || !signal || typeof signal !== 'object') {
+        return
+      }
+
+      if (!room.sessions.has(targetSessionId)) {
+        return
+      }
+
+      sendToSession(room, targetSessionId, {
+        type: 'webrtc_signal',
+        roomId: room.roomId,
+        sourceSessionId: session.sessionId,
+        targetSessionId,
+        signal,
       })
       return
     }
